@@ -86,5 +86,7 @@ def count_orders():
             total[k] += order.get(k, 0)
     return f"📦 目前統計：\n原味：{total['原味']} 斤\n香菇：{total['香菇']} 斤"
 
-if __name__ == "__main__":
-    app.run()
+import os
+
+port = int(os.environ.get("PORT", 5000))
+app.run(host="0.0.0.0", port=port)
