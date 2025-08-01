@@ -53,7 +53,7 @@ def handle_message(event):
             if order['name'] == target_name:
                 del orders[user_id]
                 deleted = True
-        reply = f"已刪除 {target_name} 的訂單。" if deleted else f"找不到 {target_name} 的訂單。"
+        reply = f"已刪除{target_name}的訂單。" if deleted else f"找不到{target_name}的訂單。"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
@@ -70,9 +70,9 @@ def handle_message(event):
                 modified = True
         if modified:
             price = calculate_price(yuanwei, xianggu)
-            reply = f"已修改 {target_name} 的訂單：原味 {yuanwei} 斤，香菇 {xianggu} 斤，共 {price} 元。"
+            reply = f"已修改{target_name}的訂單：\n原味{yuanwei}斤，香菇{xianggu}斤，共{price}元。"
         else:
-            reply = f"找不到 {target_name} 的訂單。"
+            reply = f"找不到{target_name}的訂單。"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
@@ -118,7 +118,7 @@ def handle_message(event):
                     total_yuanwei += y
                     total_xianggu += x
                     lines.append(f"{name}：原味{y}斤，香菇{x}斤，共{price}元")
-            summary = f"\n---\n總共：{total_price}元\n原味總斤數：{total_yuanwei}斤\n香菇總斤數：{total_xianggu}斤"
+            summary = f"\n---\n原味總斤數：{total_yuanwei}斤\n香菇總斤數：{total_xianggu}斤\n總共：{total_price}元"
             reply = "目前訂單統計：\n" + "\n".join(lines) + summary if lines else "目前沒有有效訂單。"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
@@ -126,7 +126,7 @@ def handle_message(event):
     # 預設提示
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text="請輸入格式：\n名字 原味數量 香菇數量\n(例如：小美 3 4)\n\n其他指令：\n- 統計\n- 刪除 姓名\n- 修改 姓名 原味數量 香菇數量\n(例如：修改 小美 1 1)")
+        TextSendMessage(text="請輸入格式：\n名字 原味數量 香菇數量\n(例如：小美 3 4)\n\n其他指令：\n- 統計\n- 刪除 姓名\n- 修改 姓名 原味數量 香菇數量")
     )
 
 import os
