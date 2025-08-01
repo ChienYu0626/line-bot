@@ -78,7 +78,7 @@ def handle_message(event):
             yuanwei = int(parts[2])
             xianggu = int(parts[3])
             orders[user_id][name] = {'原味': yuanwei, '香菇': xianggu}
-            success_lines.append(f"✏已修改 {name}：原味 {yuanwei}斤，香菇 {xianggu}斤")
+            success_lines.append(f"已修改 {name}：原味 {yuanwei}斤，香菇 {xianggu}斤")
             continue
 
         # 🔸 刪除功能：刪除 小美
@@ -120,7 +120,7 @@ def handle_message(event):
         summary_lines.append(f"\n總斤數：原味{total_yuanwei}斤，香菇{total_xianggu}斤\n總金額：{total_price}元")
         reply = "處理結果：\n" + "\n".join(success_lines) + "\n\n訂單統計：\n" + "\n".join(summary_lines)
     else:
-        reply = "請輸入正確格式：\n- 新增：名字 原味數量 香菇數量\n- 修改：修改 名字 原味 香菇\n- 刪除：刪除 名字\n\n可一次多行輸入。"
+        reply = "請輸入正確格式：\n\n- 新增：名字 原味數量 香菇數量\n- 修改：修改 名字 原味 香菇\n- 刪除：刪除 名字\n\n可一次多行輸入。\n如：\n芯芯 2 3\n阿包 1 1\n修改 倪倪 0 1\n刪除 阿婷"
 
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
