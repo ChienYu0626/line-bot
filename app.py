@@ -6,8 +6,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 app = Flask(__name__)
 
 # 用你自己的 Channel Access Token 和 Secret
-line_bot_api = LineBotApi('你的 Channel Access Token')
-handler = WebhookHandler('你的 Channel Secret')
+line_bot_api = LineBotApi('vMPuJGJbs0UGNOGBK270lDB+DL573GT70hDwopzzGvPhJUB9MSEbSLRpvTUQ57wHhn3og3GJCXVxeBSTggRxcEAUAbcptZeiQ8b9Ldwk8mVEV9kqJ0BGluqLtzjfoz5Ke4HLwe1zO1CkwjDm2i8dvwdB04t89/1O/w1cDnyilFU=')
+handler = WebhookHandler('edd0043bc79b1e457dc90b0ddf04f896')
 
 # 使用者狀態和訂單資料
 user_states = {}
