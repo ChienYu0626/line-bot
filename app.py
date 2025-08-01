@@ -17,13 +17,15 @@ def calculate_price(yuanwei, xianggu):
     elif yuanwei == 2:
         price += 250
     elif yuanwei > 2:
-        price += 250 + (yuanwei - 2) * 130
+        price += yuanwei * 125  # 每斤125元
+
     if xianggu == 1:
         price += 160
     elif xianggu == 2:
         price += 300
     elif xianggu > 2:
-        price += 300 + (xianggu - 2) * 160
+        price += xianggu * 150  # 每斤150元
+
     return price
 
 @app.route("/callback", methods=['POST'])
