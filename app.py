@@ -56,11 +56,13 @@ def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text.strip()
 
+    # 統計功能
     if text == "統計":
         reply = generate_statistics()
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
+    # 初始化使用者訂單區
     if user_id not in orders:
         orders[user_id] = {}
 
@@ -69,6 +71,27 @@ def handle_message(event):
 
     for line in lines:
         parts = line.strip().split()
+
+        # 🔸 修改功能：修改 小美 3 4
+        if len(parts) == 4 and parts[0] == "修改" and parts[2].isdigit() and parts[3].isdigit():
+            name = parts[1]
+            yuanwei = int(parts[2])
+            xianggu = int(parts[3])
+            orders[user_id][name] = {'原味': yuanwei, '香菇': xianggu}
+            success_lines.append(f"✏️ 已修改 {name}：原味 {yuanwei}斤，香菇 {xianggu}斤")
+            continue
+
+        # 🔸 刪除功能：刪除 小美
+        if len(parts) == 2 and parts[0] == "刪除":
+            name = parts[1]
+            if name in orders[user_id]:
+                del orders[user_id][name]
+                success_lines.append(f"🗑️ 已刪除 {name} 的訂單")
+            else:
+                success_lines.append(f"⚠️ 查無 {name} 的訂單")
+            continue
+
+        # 🔸 新增多筆：小美 2 3
         if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
             name = parts[0]
             yuanwei = int(parts[1])
@@ -77,8 +100,10 @@ def handle_message(event):
                 orders[user_id][name] = {'原味': 0, '香菇': 0}
             orders[user_id][name]['原味'] += yuanwei
             orders[user_id][name]['香菇'] += xianggu
-            success_lines.append(f"{name}：原味+{yuanwei}斤，香菇+{xianggu}斤")
+            success_lines.append(f"➕ {name}：原味+{yuanwei}斤，香菇+{xianggu}斤")
+            continue
 
+    # 若有成功的指令
     if success_lines:
         summary_lines = []
         total_price = 0
@@ -93,9 +118,9 @@ def handle_message(event):
             total_xianggu += x
             summary_lines.append(f"{name}：原味{y}斤，香菇{x}斤，共{price}元")
         summary_lines.append(f"\n📊 總斤數：原味{total_yuanwei}斤，香菇{total_xianggu}斤\n💰 總金額：{total_price}元")
-        reply = "✅ 已更新訂單：\n" + "\n".join(success_lines) + "\n\n📦 訂單統計：\n" + "\n".join(summary_lines)
+        reply = "✅ 處理結果：\n" + "\n".join(success_lines) + "\n\n📦 訂單統計：\n" + "\n".join(summary_lines)
     else:
-        reply = "請輸入格式：\n名字 原味數量 香菇數量\n(例如：小美 3 4)\n可一次輸入多筆，每行一筆。"
+        reply = "❗請輸入正確格式：\n- 新增：名字 原味數量 香菇數量\n- 修改：修改 名字 原味 香菇\n- 刪除：刪除 名字\n\n可一次多行輸入。"
 
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
