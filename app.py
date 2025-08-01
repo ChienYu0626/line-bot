@@ -101,7 +101,7 @@ def handle_message(event):
     if success_lines:
         reply = "處理結果：\n" + "\n".join(success_lines) + "\n\n" + generate_statistics()
     else:
-        reply = "請輸入正確格式：\n\n- 新增：名字 原味數量 香菇數量\n- 修改：修改 名字 原味 香菇\n- 刪除：刪除 名字\n- 統計"
+        reply = "請輸入正確格式：\n- 新增：名字 原味數量 香菇數量\n- 修改：修改 名字 原味 香菇\n- 刪除：刪除 名字\n- 統計\n\n可多行輸入，例如：\n倪倪 1 2\n修改 芯芯 2 2\n刪除 阿包"
 
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
 
