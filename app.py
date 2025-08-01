@@ -12,21 +12,19 @@ orders = {}
 
 def calculate_price(yuanwei, xianggu):
     price = 0
-    if yuanwei == 1:
-        price += 130
-    elif yuanwei == 2:
-        price += 250
-    elif yuanwei > 2:
-        price += yuanwei * 125  # 每斤125元
 
-    if xianggu == 1:
+    # 原味：每兩斤 250 元，剩下一斤 130 元
+    price += (yuanwei // 2) * 250
+    if yuanwei % 2 == 1:
+        price += 130
+
+    # 香菇：每兩斤 300 元，剩下一斤 160 元
+    price += (xianggu // 2) * 300
+    if xianggu % 2 == 1:
         price += 160
-    elif xianggu == 2:
-        price += 300
-    elif xianggu > 2:
-        price += xianggu * 150  # 每斤150元
 
     return price
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
