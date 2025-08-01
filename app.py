@@ -118,7 +118,7 @@ def handle_message(event):
                     total_yuanwei += y
                     total_xianggu += x
                     lines.append(f"{name}：原味{y}斤，香菇{x}斤，共{price}元")
-            summary = f"\n---\n原味總斤數：{total_yuanwei}斤\n香菇總斤數：{total_xianggu}斤\n總共：{total_price}元"
+            summary = f"\n-\n原味總斤數：{total_yuanwei}斤\n香菇總斤數：{total_xianggu}斤\n總共：{total_price}元"
             reply = "目前訂單統計：\n" + "\n".join(lines) + summary if lines else "目前沒有有效訂單。"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
