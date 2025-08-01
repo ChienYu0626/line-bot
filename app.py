@@ -50,11 +50,11 @@ def handle_message(event):
         xianggu = int(parts[2])
         price = calculate_price(yuanwei, xianggu)
         orders[user_id] = {'name': name, 'order': {'原味': yuanwei, '香菇': xianggu}}
-        reply = f"✅ 已記錄訂單：{name}\n原味 {yuanwei} 斤，香菇 {xianggu} 斤\n共 {price} 元"
+        reply = f"已記錄訂單：{name}\n原味(虱目旗魚丸)：{yuanwei}斤\n香菇(香菇蝦子)：{xianggu}斤\n共{price}元！"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    if text == "查看統計":
+    if text == "統計":
         if not orders:
             reply = "目前沒有訂單記錄。"
         else:
@@ -65,12 +65,12 @@ def handle_message(event):
                     y = order['order']['原味']
                     x = order['order']['香菇']
                     price = calculate_price(y, x)
-                    lines.append(f"{name}，原味 {y} 斤，香菇 {x} 斤，共 {price} 元")
-            reply = "📦 目前訂單統計：\n" + "\n".join(lines) if lines else "目前沒有訂單。"
+                    lines.append(f"{name}：原味{y}斤，香菇{x}斤，共{price}元")
+            reply = "目前訂單統計：\n" + "\n".join(lines) if lines else "目前沒有訂單。"
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請輸入格式：名字 原味數量 香菇數量\n或輸入「查看統計」"))
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請輸入格式：\n名字 原味數量 香菇數量\n(例如：小美 3 4)\n或輸入「統計」以查看目前累計訂單！"))
 
 import os
 
