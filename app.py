@@ -5,88 +5,76 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 app = Flask(__name__)
 
-# 用你自己的 Channel Access Token 和 Secret
-line_bot_api = LineBotApi('vMPuJGJbs0UGNOGBK270lDB+DL573GT70hDwopzzGvPhJUB9MSEbSLRpvTUQ57wHhn3og3GJCXVxeBSTggRxcEAUAbcptZeiQ8b9Ldwk8mVEV9kqJ0BGluqLtzjfoz5Ke4HLwe1zO1CkwjDm2i8dvwdB04t89/1O/w1cDnyilFU=')
+line_bot_api = LineBotApi('vMPuJGJbs0UGNOGBK270lDB+DL573GT70hDwopzzGvPhJUB9MSEbSLRpvTUQ57wHhn3og3GJCXVxeBSTggRxcE AUAbcptZeiQ8b9Ldwk8mVEV9kqJ0BGluqLtzjfoz5Ke4HLwe1zO1CkwjDm2i8dvwdB04t89/1O/w1cDnyilFU=')
 handler = WebhookHandler('edd0043bc79b1e457dc90b0ddf04f896')
 
-# 使用者狀態和訂單資料
-user_states = {}
-user_orders = {}
+orders = {}
+
+def calculate_price(yuanwei, xianggu):
+    price = 0
+    if yuanwei == 1:
+        price += 130
+    elif yuanwei == 2:
+        price += 250
+    elif yuanwei > 2:
+        price += 250 + (yuanwei - 2) * 130
+    if xianggu == 1:
+        price += 160
+    elif xianggu == 2:
+        price += 300
+    elif xianggu > 2:
+        price += 300 + (xianggu - 2) * 160
+    return price
 
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
-
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
-
     return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_id = event.source.user_id
-    msg = event.message.text.strip()
-    
-    # 初始化狀態
-    if user_id not in user_states:
-        user_states[user_id] = None
+    text = event.message.text.strip()
+    if user_id not in orders:
+        orders[user_id] = {'name': None, 'order': {'原味': 0, '香菇': 0}}
 
-    # 預定流程
-    if msg == "預定":
-        user_states[user_id] = "waiting_for_amounts"
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請問你要訂幾斤原味？幾斤香菇？\n範例：2 3")
-        )
+    parts = text.split()
+    if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+        name = parts[0]
+        yuanwei = int(parts[1])
+        xianggu = int(parts[2])
+        price = calculate_price(yuanwei, xianggu)
+        orders[user_id] = {'name': name, 'order': {'原味': yuanwei, '香菇': xianggu}}
+        reply = f"✅ 已記錄訂單：{name}\n原味 {yuanwei} 斤，香菇 {xianggu} 斤\n共 {price} 元"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    # 回覆預定數量
-    elif user_states.get(user_id) == "waiting_for_amounts":
-        try:
-            parts = list(map(int, msg.split()))
-            if len(parts) == 2:
-                yuanshu = parts[0]
-                xianggu = parts[1]
-                user_orders[user_id] = {"原味": yuanshu, "香菇": xianggu}
-                user_states[user_id] = None
-                reply = f"✅ 已記錄你的訂單：\n原味 {yuanshu} 斤\n香菇 {xianggu} 斤"
-            else:
-                reply = "請輸入兩個數字，例如：2 3（代表原味2斤、香菇3斤）"
-        except:
-            reply = "格式錯誤，請輸入兩個數字，例如：2 3"
-        
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply)
-        )
+    if text == "查看統計":
+        if not orders:
+            reply = "目前沒有訂單記錄。"
+        else:
+            lines = []
+            for order in orders.values():
+                if order['name']:
+                    name = order['name']
+                    y = order['order']['原味']
+                    x = order['order']['香菇']
+                    price = calculate_price(y, x)
+                    lines.append(f"{name}，原味 {y} 斤，香菇 {x} 斤，共 {price} 元")
+            reply = "📦 目前訂單統計：\n" + "\n".join(lines) if lines else "目前沒有訂單。"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    # 查看統計
-    elif msg == "查看統計":
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=count_orders())
-        )
-        return
-
-    # 其他情況
-    else:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="請輸入「預定」開始訂購，或「查看統計」查看目前總量")
-        )
-
-def count_orders():
-    total = {"原味": 0, "香菇": 0}
-    for order in user_orders.values():
-        for k in total:
-            total[k] += order.get(k, 0)
-    return f"📦 目前統計：\n原味：{total['原味']} 斤\n香菇：{total['香菇']} 斤"
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="請輸入格式：名字 原味數量 香菇數量\n或輸入「查看統計」"))
 
 import os
 
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
