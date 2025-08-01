@@ -27,18 +27,19 @@ def generate_statistics():
     total_price = 0
     total_yuanwei = 0
     total_xianggu = 0
-    for order in orders.values():
-        name = order['name']
-        y = order['order']['原味']
-        x = order['order']['香菇']
-        if name and (y > 0 or x > 0):
+    for user_orders in orders.values():
+        for name, order in user_orders.items():
+            y = order['原味']
+            x = order['香菇']
+            if y == 0 and x == 0:
+                continue
             price = calculate_price(y, x)
             total_price += price
             total_yuanwei += y
             total_xianggu += x
             lines.append(f"{name}：原味{y}斤，香菇{x}斤，共{price}元")
     summary = f"\n-\n原味總斤數：{total_yuanwei}斤\n香菇總斤數：{total_xianggu}斤\n總共：{total_price}元"
-    return "目前訂單統計：\n" + "\n".join(lines) + summary
+    return "📊 所有訂單統計：\n" + "\n".join(lines) + summary
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -55,11 +56,17 @@ def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text.strip()
 
+    if text == "統計":
+        reply = generate_statistics()
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+        return
+
     if user_id not in orders:
         orders[user_id] = {}
 
     lines = text.splitlines()
     success_lines = []
+
     for line in lines:
         parts = line.strip().split()
         if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
@@ -71,7 +78,7 @@ def handle_message(event):
             orders[user_id][name]['原味'] += yuanwei
             orders[user_id][name]['香菇'] += xianggu
             success_lines.append(f"{name}：原味+{yuanwei}斤，香菇+{xianggu}斤")
-    
+
     if success_lines:
         summary_lines = []
         total_price = 0
